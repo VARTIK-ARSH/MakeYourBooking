@@ -58,7 +58,7 @@ public class Activity4 extends AppCompatActivity {
         autoCompleteTextView.setAdapter(adapteritem);
         autoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
             String item = parent.getItemAtPosition(position).toString();
-            Toast.makeText(Activity4.this, "Item: " + item, Toast.LENGTH_SHORT).show();
+
         });
 
         // Arrow back start
@@ -158,8 +158,7 @@ public class Activity4 extends AppCompatActivity {
             HttpURLConnection connection = null;
             BufferedReader reader = null;
             try {
-
-                URL url = new URL("http://localhost:8080/api/accounts");
+                URL url = new URL("http://192.168.29.67:8080/api/accounts");
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
 
@@ -174,17 +173,22 @@ public class Activity4 extends AppCompatActivity {
                 String response = result.toString();
                 Log.d("API Response", response);
 
-
+                // Deserialize the JSON response into a list of Account objects
                 Gson gson = new Gson();
-                TypeToken<List<String>> token = new TypeToken<List<String>>() {};
-                List<String> fetchedItems = gson.fromJson(response, token.getType());
+                TypeToken<List<Account>> token = new TypeToken<List<Account>>() {};
+                List<Account> accounts = gson.fromJson(response, token.getType());
 
+                // Extract account names and update the AutoCompleteTextView
                 runOnUiThread(() -> {
                     itemList.clear();
-                    if (fetchedItems != null) {
-                        itemList.addAll(fetchedItems);
+                    if (accounts != null) {
+                        for (Account account : accounts) {
+                            itemList.add(account.getAccountName());
+                        }
+                        adapteritem.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(Activity4.this, "No accounts found", Toast.LENGTH_SHORT).show();
                     }
-                    adapteritem.notifyDataSetChanged();
                 });
 
             } catch (Exception e) {
@@ -200,5 +204,10 @@ public class Activity4 extends AppCompatActivity {
                 }
             }
         }).start();
-    }
+
+
+
+
+
+}
 }
